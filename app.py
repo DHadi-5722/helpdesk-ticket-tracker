@@ -1,7 +1,23 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request, redirect, url_for
 from database import get_connection
 
 app = Flask(__name__)
+
+
+VALID_CATEGORIES = [
+    "Software",
+    "Hardware",
+    "Network",
+    "Account Access",
+    "Other"
+]
+
+VALID_PRIORITIES = [
+    "Low",
+    "Medium",
+    "High",
+    "Critical"
+]
 
 
 @app.route("/")
@@ -32,6 +48,77 @@ def tickets():
     return render_template(
         "tickets.html",
         tickets=tickets
+    )
+
+
+@app.route("/tickets/new", methods=["GET", "POST"])
+def new_ticket():
+    error = None
+
+    if request.method == "POST":
+        title = request.form.get("title", "").strip()
+        description = request.form.get("description", "").strip()
+        category = request.form.get("category", "").strip()
+        priority = request.form.get("priority", "").strip()
+        submitted_by = request.form.get("submitted_by", "").strip()
+
+        if not title:
+            error = "Ticket title is required."
+
+        elif not description:
+            error = "Description is required."
+
+        elif category not in VALID_CATEGORIES:
+            error = "Please select a valid category."
+
+        elif priority not in VALID_PRIORITIES:
+            error = "Please select a valid priority."
+
+        elif not submitted_by:
+            error = "Submitted By is required."
+
+        if error is None:
+            connection = get_connection()
+
+            cursor = connection.execute(
+                """
+                INSERT INTO tickets (
+                    title,
+                    description,
+                    category,
+                    priority,
+                    status,
+                    submitted_by
+                )
+                VALUES (?, ?, ?, ?, 'Open', ?)
+                """,
+                (
+                    title,
+                    description,
+                    category,
+                    priority,
+                    submitted_by
+                )
+            )
+
+            connection.commit()
+
+            ticket_id = cursor.lastrowid
+
+            connection.close()
+
+            return redirect(
+                url_for(
+                    "ticket_detail",
+                    ticket_id=ticket_id
+                )
+            )
+
+    return render_template(
+        "new_ticket.html",
+        error=error,
+        categories=VALID_CATEGORIES,
+        priorities=VALID_PRIORITIES
     )
 
 
