@@ -16,7 +16,19 @@
 </div>
 
 
-<div class="card shadow-sm">
+{% if error %}
+
+    <div
+        class="alert alert-danger"
+        role="alert"
+    >
+        {{ error }}
+    </div>
+
+{% endif %}
+
+
+<div class="card shadow-sm mb-4">
 
 
     <div class="card-header">
@@ -249,6 +261,182 @@
     </div>
 
 </div>
+
+
+{% if ticket["status"] != "Resolved" %}
+
+
+<div class="card shadow-sm mb-4">
+
+    <div class="card-header">
+
+        <h4 class="mb-0">
+            Update Ticket Status
+        </h4>
+
+    </div>
+
+
+    <div class="card-body">
+
+
+        <form
+            method="POST"
+            action="/tickets/{{ ticket['id'] }}/status"
+        >
+
+
+            <div class="row align-items-end">
+
+
+                <div class="col-md-8">
+
+                    <label
+                        for="status"
+                        class="form-label"
+                    >
+                        Status
+                    </label>
+
+
+                    <select
+                        class="form-select"
+                        id="status"
+                        name="status"
+                        required
+                    >
+
+
+                        <option
+                            value="Open"
+                            {% if ticket["status"] == "Open" %}
+                                selected
+                            {% endif %}
+                        >
+                            Open
+                        </option>
+
+
+                        <option
+                            value="In Progress"
+                            {% if ticket["status"] == "In Progress" %}
+                                selected
+                            {% endif %}
+                        >
+                            In Progress
+                        </option>
+
+
+                    </select>
+
+                </div>
+
+
+                <div class="col-md-4">
+
+                    <button
+                        type="submit"
+                        class="btn btn-primary w-100"
+                    >
+                        Update Status
+                    </button>
+
+                </div>
+
+
+            </div>
+
+
+        </form>
+
+
+    </div>
+
+</div>
+
+
+<div class="card shadow-sm">
+
+    <div class="card-header">
+
+        <h4 class="mb-0">
+            Resolve Ticket
+        </h4>
+
+    </div>
+
+
+    <div class="card-body">
+
+
+        <p class="text-muted">
+
+            Enter a troubleshooting or resolution note before marking this ticket as resolved.
+
+        </p>
+
+
+        <form
+            method="POST"
+            action="/tickets/{{ ticket['id'] }}/resolve"
+        >
+
+
+            <div class="mb-3">
+
+                <label
+                    for="resolution_notes"
+                    class="form-label"
+                >
+                    Resolution Notes
+                </label>
+
+
+                <textarea
+                    class="form-control"
+                    id="resolution_notes"
+                    name="resolution_notes"
+                    rows="4"
+                    placeholder="Explain what was done to resolve the issue..."
+                    required
+                ></textarea>
+
+            </div>
+
+
+            <button
+                type="submit"
+                class="btn btn-success"
+            >
+                Resolve Ticket
+            </button>
+
+
+        </form>
+
+
+    </div>
+
+</div>
+
+
+{% else %}
+
+
+<div class="alert alert-success">
+
+    <strong>
+        Ticket Resolved
+    </strong>
+
+    <br>
+
+    This support ticket has been completed and includes a resolution note.
+
+</div>
+
+
+{% endif %}
 
 
 {% endblock %}

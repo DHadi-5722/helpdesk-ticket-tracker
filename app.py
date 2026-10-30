@@ -19,6 +19,12 @@ VALID_PRIORITIES = [
     "Critical"
 ]
 
+VALID_STATUSES = [
+    "Open",
+    "In Progress",
+    "Resolved"
+]
+
 
 @app.route("/")
 def dashboard():
@@ -153,7 +159,133 @@ def ticket_detail(ticket_id):
 
     return render_template(
         "ticket_detail.html",
-        ticket=ticket
+        ticket=ticket,
+        error=None
+    )
+
+
+@app.route("/tickets/<int:ticket_id>/status", methods=["POST"])
+def update_ticket_status(ticket_id):
+    new_status = request.form.get("status", "").strip()
+
+    if new_status not in VALID_STATUSES:
+        return render_template("404.html"), 404
+
+    connection = get_connection()
+
+    ticket = connection.execute(
+        """
+        SELECT id
+        FROM tickets
+        WHERE id = ?
+        """,
+        (ticket_id,)
+    ).fetchone()
+
+    if ticket is None:
+        connection.close()
+        return render_template("404.html"), 404
+
+    if new_status == "Resolved":
+        connection.close()
+
+        return redirect(
+            url_for(
+                "ticket_detail",
+                ticket_id=ticket_id
+            )
+        )
+
+    connection.execute(
+        """
+        UPDATE tickets
+        SET
+            status = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+        """,
+        (
+            new_status,
+            ticket_id
+        )
+    )
+
+    connection.commit()
+    connection.close()
+
+    return redirect(
+        url_for(
+            "ticket_detail",
+            ticket_id=ticket_id
+        )
+    )
+
+
+@app.route("/tickets/<int:ticket_id>/resolve", methods=["POST"])
+def resolve_ticket(ticket_id):
+    resolution_notes = request.form.get(
+        "resolution_notes",
+        ""
+    ).strip()
+
+    connection = get_connection()
+
+    ticket = connection.execute(
+        """
+        SELECT
+            id,
+            title,
+            description,
+            category,
+            priority,
+            status,
+            submitted_by,
+            assigned_to,
+            created_at,
+            updated_at,
+            resolution_notes
+        FROM tickets
+        WHERE id = ?
+        """,
+        (ticket_id,)
+    ).fetchone()
+
+    if ticket is None:
+        connection.close()
+        return render_template("404.html"), 404
+
+    if not resolution_notes:
+        connection.close()
+
+        return render_template(
+            "ticket_detail.html",
+            ticket=ticket,
+            error="A resolution note is required before resolving the ticket."
+        )
+
+    connection.execute(
+        """
+        UPDATE tickets
+        SET
+            status = 'Resolved',
+            resolution_notes = ?,
+            updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+        """,
+        (
+            resolution_notes,
+            ticket_id
+        )
+    )
+
+    connection.commit()
+    connection.close()
+
+    return redirect(
+        url_for(
+            "ticket_detail",
+            ticket_id=ticket_id
+        )
     )
 
 
