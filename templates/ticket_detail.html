@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+
+
+<div class="mb-4">
+
+    <a
+        href="/tickets"
+        class="btn btn-outline-secondary btn-sm"
+    >
+        Back to Tickets
+    </a>
+
+</div>
+
+
+<div class="card shadow-sm">
+
+
+    <div class="card-header">
+
+        <h2 class="mb-0">
+
+            Ticket #{{ ticket["id"] }}
+            -
+            {{ ticket["title"] }}
+
+        </h2>
+
+    </div>
+
+
+    <div class="card-body">
+
+
+        <div class="row mb-3">
+
+
+            <div class="col-md-4">
+
+                <strong>
+                    Category:
+                </strong>
+
+                <p>
+                    {{ ticket["category"] }}
+                </p>
+
+            </div>
+
+
+            <div class="col-md-4">
+
+                <strong>
+                    Priority:
+                </strong>
+
+                <p>
+
+                    {% if ticket["priority"] == "Critical" %}
+
+                        <span class="badge bg-danger">
+                            Critical
+                        </span>
+
+                    {% elif ticket["priority"] == "High" %}
+
+                        <span class="badge bg-warning text-dark">
+                            High
+                        </span>
+
+                    {% elif ticket["priority"] == "Medium" %}
+
+                        <span class="badge bg-info text-dark">
+                            Medium
+                        </span>
+
+                    {% else %}
+
+                        <span class="badge bg-secondary">
+                            Low
+                        </span>
+
+                    {% endif %}
+
+                </p>
+
+            </div>
+
+
+            <div class="col-md-4">
+
+                <strong>
+                    Status:
+                </strong>
+
+                <p>
+
+                    {% if ticket["status"] == "Resolved" %}
+
+                        <span class="badge bg-success">
+                            Resolved
+                        </span>
+
+                    {% elif ticket["status"] == "In Progress" %}
+
+                        <span class="badge bg-primary">
+                            In Progress
+                        </span>
+
+                    {% else %}
+
+                        <span class="badge bg-secondary">
+                            Open
+                        </span>
+
+                    {% endif %}
+
+                </p>
+
+            </div>
+
+
+        </div>
+
+
+        <hr>
+
+
+        <div class="mb-4">
+
+            <strong>
+                Description:
+            </strong>
+
+            <p class="mt-2">
+                {{ ticket["description"] }}
+            </p>
+
+        </div>
+
+
+        <div class="row mb-3">
+
+
+            <div class="col-md-6">
+
+                <strong>
+                    Submitted By:
+                </strong>
+
+                <p>
+                    {{ ticket["submitted_by"] }}
+                </p>
+
+            </div>
+
+
+            <div class="col-md-6">
+
+                <strong>
+                    Assigned To:
+                </strong>
+
+
+                {% if ticket["assigned_to"] %}
+
+                    <p>
+                        {{ ticket["assigned_to"] }}
+                    </p>
+
+                {% else %}
+
+                    <p class="text-muted">
+                        Not assigned
+                    </p>
+
+                {% endif %}
+
+            </div>
+
+
+        </div>
+
+
+        <div class="row mb-3">
+
+
+            <div class="col-md-6">
+
+                <strong>
+                    Created:
+                </strong>
+
+                <p>
+                    {{ ticket["created_at"] }}
+                </p>
+
+            </div>
+
+
+            <div class="col-md-6">
+
+                <strong>
+                    Last Updated:
+                </strong>
+
+                <p>
+                    {{ ticket["updated_at"] }}
+                </p>
+
+            </div>
+
+
+        </div>
+
+
+        <hr>
+
+
+        <div class="mb-3">
+
+            <strong>
+                Resolution Notes:
+            </strong>
+
+
+            {% if ticket["resolution_notes"] %}
+
+                <div class="alert alert-success mt-2">
+
+                    {{ ticket["resolution_notes"] }}
+
+                </div>
+
+            {% else %}
+
+                <p class="text-muted mt-2">
+                    No resolution notes have been added.
+                </p>
+
+            {% endif %}
+
+        </div>
+
+
+    </div>
+
+</div>
+
+
+{% endblock %}
