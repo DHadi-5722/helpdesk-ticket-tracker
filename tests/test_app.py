@@ -522,3 +522,52 @@ def test_ticket_can_be_resolved(
         ticket["resolution_notes"]
         == resolution_text
     )
+
+@pytest.mark.parametrize("status", ["Open", "In Progress"])
+def test_resolved_ticket_cannot_change_status(client, test_database, status):
+    response = client.post("/tickets/3/status", data={"status": status})
+    assert response.status_code == 302
+    with get_database_connection(test_database) as connection:
+        ticket = connection.execute("SELECT * FROM tickets WHERE id = 3").fetchone()
+    assert ticket["status"] == "Resolved"
+    assert ticket["resolution_notes"] == "Password was reset and login was verified."
+
+
+def test_resolved_ticket_notes_cannot_be_overwritten(client, test_database):
+    response = client.post("/tickets/3/resolve", data={"resolution_notes": "Replacement"})
+    assert response.status_code == 302
+    with get_database_connection(test_database) as connection:
+        ticket = connection.execute("SELECT * FROM tickets WHERE id = 3").fetchone()
+    assert ticket["resolution_notes"] == "Password was reset and login was verified."
+
+
+@pytest.mark.parametrize("length, accepted", [(150, True), (151, False)])
+def test_ticket_title_length(client, test_database, length, accepted):
+    title = "T" * length
+    response = client.post("/tickets/new", data={
+        "title": title, "description": "Test description", "category": "Software",
+        "priority": "Low", "submitted_by": "Test User"
+    })
+    with get_database_connection(test_database) as connection:
+        count = connection.execute("SELECT COUNT(*) FROM tickets WHERE title = ?", (title,)).fetchone()[0]
+    assert count == int(accepted)
+    assert response.status_code == (302 if accepted else 200)
+    if not accepted:
+        assert b"150 characters or fewer" in response.data
+
+
+@pytest.mark.parametrize("field", ["status", "priority", "category"])
+def test_invalid_filter_is_not_shown_as_active(client, field):
+    response = client.get("/tickets", query_string={field: "InvalidFilter"})
+    assert response.status_code == 200
+    assert b"InvalidFilter" not in response.data
+    assert b"Active Filters:" not in response.data
+    assert b"VPN connection fails" in response.data
+
+
+def test_valid_filter_remains_when_another_is_invalid(client):
+    response = client.get("/tickets?status=Open&priority=InvalidFilter")
+    assert b"Status: Open" in response.data
+    assert b"InvalidFilter" not in response.data
+    assert b"VPN connection fails" in response.data
+    assert b"Inventory application crashes" not in response.data

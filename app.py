@@ -103,6 +103,13 @@ def tickets():
     selected_priority = request.args.get("priority", "").strip()
     selected_category = request.args.get("category", "").strip()
 
+    if selected_status not in VALID_STATUSES:
+        selected_status = ""
+    if selected_priority not in VALID_PRIORITIES:
+        selected_priority = ""
+    if selected_category not in VALID_CATEGORIES:
+        selected_category = ""
+
     query = """
         SELECT
             id,
@@ -168,6 +175,9 @@ def new_ticket():
 
         if not title:
             error = "Ticket title is required."
+
+        elif len(title) > 150:
+            error = "Ticket title must be 150 characters or fewer."
 
         elif not description:
             error = "Description is required."
@@ -273,7 +283,7 @@ def update_ticket_status(ticket_id):
 
     ticket = connection.execute(
         """
-        SELECT id
+        SELECT id, status
         FROM tickets
         WHERE id = ?
         """,
@@ -285,7 +295,7 @@ def update_ticket_status(ticket_id):
 
         return render_template("404.html"), 404
 
-    if new_status == "Resolved":
+    if ticket["status"] == "Resolved" or new_status == "Resolved":
         connection.close()
 
         return redirect(
@@ -301,7 +311,7 @@ def update_ticket_status(ticket_id):
         SET
             status = ?,
             updated_at = CURRENT_TIMESTAMP
-        WHERE id = ?
+        WHERE id = ? AND status != 'Resolved'
         """,
         (
             new_status,
@@ -354,6 +364,10 @@ def resolve_ticket(ticket_id):
 
         return render_template("404.html"), 404
 
+    if ticket["status"] == "Resolved":
+        connection.close()
+        return redirect(url_for("ticket_detail", ticket_id=ticket_id))
+
     if not resolution_notes:
         connection.close()
 
@@ -370,7 +384,7 @@ def resolve_ticket(ticket_id):
             status = 'Resolved',
             resolution_notes = ?,
             updated_at = CURRENT_TIMESTAMP
-        WHERE id = ?
+        WHERE id = ? AND status != 'Resolved'
         """,
         (
             resolution_notes,
