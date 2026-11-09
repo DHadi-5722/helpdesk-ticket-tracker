@@ -4,14 +4,26 @@
 {% block content %}
 
 
-<div class="mb-4">
+<div class="page-heading">
 
-    <a
-        href="/tickets"
-        class="btn btn-outline-secondary btn-sm"
-    >
-        Back to Tickets
-    </a>
+    <div>
+
+        <a
+            href="/tickets"
+            class="btn btn-outline-secondary btn-sm mb-3"
+        >
+            Back to Tickets
+        </a>
+
+        <h1>
+            Ticket #{{ ticket["id"] }}
+        </h1>
+
+        <p class="text-muted">
+            {{ ticket["title"] }}
+        </p>
+
+    </div>
 
 </div>
 
@@ -22,7 +34,15 @@
         class="alert alert-danger"
         role="alert"
     >
+
+        <strong>
+            Unable to resolve ticket.
+        </strong>
+
+        <br>
+
         {{ error }}
+
     </div>
 
 {% endif %}
@@ -33,13 +53,38 @@
 
     <div class="card-header">
 
-        <h2 class="mb-0">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
 
-            Ticket #{{ ticket["id"] }}
-            -
-            {{ ticket["title"] }}
+            <h4 class="mb-0">
+                Ticket Information
+            </h4>
 
-        </h2>
+
+            <div>
+
+                {% if ticket["status"] == "Resolved" %}
+
+                    <span class="badge bg-success status-badge">
+                        Resolved
+                    </span>
+
+                {% elif ticket["status"] == "In Progress" %}
+
+                    <span class="badge bg-primary status-badge">
+                        In Progress
+                    </span>
+
+                {% else %}
+
+                    <span class="badge bg-secondary status-badge">
+                        Open
+                    </span>
+
+                {% endif %}
+
+            </div>
+
+        </div>
 
     </div>
 
@@ -47,14 +92,19 @@
     <div class="card-body">
 
 
-        <div class="row mb-3">
+        <h3 class="ticket-title">
+            {{ ticket["title"] }}
+        </h3>
 
 
-            <div class="col-md-4">
+        <div class="row mt-4">
 
-                <strong>
-                    Category:
-                </strong>
+
+            <div class="col-md-4 ticket-field">
+
+                <span class="field-label">
+                    Category
+                </span>
 
                 <p>
                     {{ ticket["category"] }}
@@ -63,11 +113,11 @@
             </div>
 
 
-            <div class="col-md-4">
+            <div class="col-md-4 ticket-field">
 
-                <strong>
-                    Priority:
-                </strong>
+                <span class="field-label">
+                    Priority
+                </span>
 
                 <p>
 
@@ -102,34 +152,14 @@
             </div>
 
 
-            <div class="col-md-4">
+            <div class="col-md-4 ticket-field">
 
-                <strong>
-                    Status:
-                </strong>
+                <span class="field-label">
+                    Submitted By
+                </span>
 
                 <p>
-
-                    {% if ticket["status"] == "Resolved" %}
-
-                        <span class="badge bg-success">
-                            Resolved
-                        </span>
-
-                    {% elif ticket["status"] == "In Progress" %}
-
-                        <span class="badge bg-primary">
-                            In Progress
-                        </span>
-
-                    {% else %}
-
-                        <span class="badge bg-secondary">
-                            Open
-                        </span>
-
-                    {% endif %}
-
+                    {{ ticket["submitted_by"] }}
                 </p>
 
             </div>
@@ -141,40 +171,30 @@
         <hr>
 
 
-        <div class="mb-4">
+        <div class="ticket-field">
 
-            <strong>
-                Description:
-            </strong>
+            <span class="field-label">
+                Description
+            </span>
 
-            <p class="mt-2">
+            <p class="ticket-description">
                 {{ ticket["description"] }}
             </p>
 
         </div>
 
 
-        <div class="row mb-3">
+        <hr>
 
 
-            <div class="col-md-6">
-
-                <strong>
-                    Submitted By:
-                </strong>
-
-                <p>
-                    {{ ticket["submitted_by"] }}
-                </p>
-
-            </div>
+        <div class="row">
 
 
-            <div class="col-md-6">
+            <div class="col-md-4 ticket-field">
 
-                <strong>
-                    Assigned To:
-                </strong>
+                <span class="field-label">
+                    Assigned To
+                </span>
 
 
                 {% if ticket["assigned_to"] %}
@@ -194,17 +214,11 @@
             </div>
 
 
-        </div>
+            <div class="col-md-4 ticket-field">
 
-
-        <div class="row mb-3">
-
-
-            <div class="col-md-6">
-
-                <strong>
-                    Created:
-                </strong>
+                <span class="field-label">
+                    Created
+                </span>
 
                 <p>
                     {{ ticket["created_at"] }}
@@ -213,11 +227,11 @@
             </div>
 
 
-            <div class="col-md-6">
+            <div class="col-md-4 ticket-field">
 
-                <strong>
-                    Last Updated:
-                </strong>
+                <span class="field-label">
+                    Last Updated
+                </span>
 
                 <p>
                     {{ ticket["updated_at"] }}
@@ -229,33 +243,28 @@
         </div>
 
 
-        <hr>
+        {% if ticket["resolution_notes"] %}
 
 
-        <div class="mb-3">
-
-            <strong>
-                Resolution Notes:
-            </strong>
+            <hr>
 
 
-            {% if ticket["resolution_notes"] %}
+            <div class="ticket-field">
 
-                <div class="alert alert-success mt-2">
+                <span class="field-label">
+                    Resolution Notes
+                </span>
+
+                <div class="alert alert-success mt-2 mb-0">
 
                     {{ ticket["resolution_notes"] }}
 
                 </div>
 
-            {% else %}
+            </div>
 
-                <p class="text-muted mt-2">
-                    No resolution notes have been added.
-                </p>
 
-            {% endif %}
-
-        </div>
+        {% endif %}
 
 
     </div>
@@ -266,156 +275,159 @@
 {% if ticket["status"] != "Resolved" %}
 
 
-<div class="card shadow-sm mb-4">
-
-    <div class="card-header">
-
-        <h4 class="mb-0">
-            Update Ticket Status
-        </h4>
-
-    </div>
+<div class="row g-4">
 
 
-    <div class="card-body">
+    <div class="col-lg-5">
 
 
-        <form
-            method="POST"
-            action="/tickets/{{ ticket['id'] }}/status"
-        >
+        <div class="card shadow-sm h-100">
+
+            <div class="card-header">
+
+                <h4 class="mb-0">
+                    Update Status
+                </h4>
+
+            </div>
 
 
-            <div class="row align-items-end">
+            <div class="card-body">
 
 
-                <div class="col-md-8">
-
-                    <label
-                        for="status"
-                        class="form-label"
-                    >
-                        Status
-                    </label>
+                <form
+                    method="POST"
+                    action="/tickets/{{ ticket['id'] }}/status"
+                >
 
 
-                    <select
-                        class="form-select"
-                        id="status"
-                        name="status"
-                        required
-                    >
+                    <div class="mb-3">
 
-
-                        <option
-                            value="Open"
-                            {% if ticket["status"] == "Open" %}
-                                selected
-                            {% endif %}
+                        <label
+                            for="status"
+                            class="form-label"
                         >
-                            Open
-                        </option>
+                            Ticket Status
+                        </label>
 
-
-                        <option
-                            value="In Progress"
-                            {% if ticket["status"] == "In Progress" %}
-                                selected
-                            {% endif %}
+                        <select
+                            class="form-select"
+                            id="status"
+                            name="status"
+                            required
                         >
-                            In Progress
-                        </option>
+
+                            <option
+                                value="Open"
+                                {% if ticket["status"] == "Open" %}
+                                    selected
+                                {% endif %}
+                            >
+                                Open
+                            </option>
 
 
-                    </select>
+                            <option
+                                value="In Progress"
+                                {% if ticket["status"] == "In Progress" %}
+                                    selected
+                                {% endif %}
+                            >
+                                In Progress
+                            </option>
 
-                </div>
+                        </select>
 
+                    </div>
 
-                <div class="col-md-4">
 
                     <button
                         type="submit"
-                        class="btn btn-primary w-100"
+                        class="btn btn-primary"
                     >
                         Update Status
                     </button>
 
-                </div>
+
+                </form>
 
 
             </div>
 
-
-        </form>
-
-
-    </div>
-
-</div>
-
-
-<div class="card shadow-sm">
-
-    <div class="card-header">
-
-        <h4 class="mb-0">
-            Resolve Ticket
-        </h4>
+        </div>
 
     </div>
 
 
-    <div class="card-body">
+    <div class="col-lg-7">
 
 
-        <p class="text-muted">
+        <div class="card shadow-sm h-100">
 
-            Enter a troubleshooting or resolution note before marking this ticket as resolved.
+            <div class="card-header">
 
-        </p>
+                <h4 class="mb-0">
+                    Resolve Ticket
+                </h4>
 
-
-        <form
-            method="POST"
-            action="/tickets/{{ ticket['id'] }}/resolve"
-        >
+            </div>
 
 
-            <div class="mb-3">
+            <div class="card-body">
 
-                <label
-                    for="resolution_notes"
-                    class="form-label"
+
+                <p class="text-muted">
+
+                    Document the troubleshooting or corrective action before resolving the ticket.
+
+                </p>
+
+
+                <form
+                    method="POST"
+                    action="/tickets/{{ ticket['id'] }}/resolve"
                 >
-                    Resolution Notes
-                </label>
 
 
-                <textarea
-                    class="form-control"
-                    id="resolution_notes"
-                    name="resolution_notes"
-                    rows="4"
-                    placeholder="Explain what was done to resolve the issue..."
-                    required
-                ></textarea>
+                    <div class="mb-3">
+
+                        <label
+                            for="resolution_notes"
+                            class="form-label"
+                        >
+                            Resolution Notes
+                        </label>
+
+
+                        <textarea
+                            class="form-control"
+                            id="resolution_notes"
+                            name="resolution_notes"
+                            rows="4"
+                            placeholder="Explain what was done to resolve the issue..."
+                            required
+                        ></textarea>
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        class="btn btn-success"
+                    >
+                        Resolve Ticket
+                    </button>
+
+
+                </form>
+
 
             </div>
 
-
-            <button
-                type="submit"
-                class="btn btn-success"
-            >
-                Resolve Ticket
-            </button>
-
-
-        </form>
-
+        </div>
 
     </div>
+
 
 </div>
 
@@ -423,15 +435,17 @@
 {% else %}
 
 
-<div class="alert alert-success">
+<div class="alert alert-success resolved-message">
 
-    <strong>
+    <h5>
         Ticket Resolved
-    </strong>
+    </h5>
 
-    <br>
+    <p class="mb-0">
 
-    This support ticket has been completed and includes a resolution note.
+        This support ticket has been completed and its resolution has been documented.
+
+    </p>
 
 </div>
 
