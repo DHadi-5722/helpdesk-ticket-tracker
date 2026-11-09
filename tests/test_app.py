@@ -1,3 +1,5 @@
+"""Verify HTTP behavior and persisted data using isolated temporary databases."""
+
 import sqlite3
 import sys
 from pathlib import Path
@@ -21,6 +23,7 @@ SCHEMA_FILE = PROJECT_ROOT / "schema.sql"
 
 @pytest.fixture()
 def test_database(tmp_path, monkeypatch):
+    """Create sample data in a temporary database and replace the app connection function for this test."""
     database_path = tmp_path / "test_helpdesk.db"
 
     connection = sqlite3.connect(database_path)
@@ -103,6 +106,7 @@ def test_database(tmp_path, monkeypatch):
 
 @pytest.fixture()
 def client(test_database):
+    """Provide a Flask browser simulator; TESTING lets unexpected errors fail the test directly."""
     app_module.app.config["TESTING"] = True
 
     with app_module.app.test_client() as test_client:
@@ -110,6 +114,7 @@ def client(test_database):
 
 
 def get_database_connection(database_path):
+    """Open the temporary database so tests can verify the actual saved records."""
     connection = sqlite3.connect(
         database_path
     )
@@ -120,6 +125,7 @@ def get_database_connection(database_path):
 
 
 def test_dashboard_loads(client):
+    """Check the dashboard responds successfully and includes the expected summary labels."""
     response = client.get("/")
 
     assert response.status_code == 200
@@ -136,6 +142,7 @@ def test_dashboard_loads(client):
 
 
 def test_ticket_list_loads(client):
+    """Check all seeded tickets appear in the list."""
     response = client.get("/tickets")
 
     assert response.status_code == 200
@@ -148,6 +155,7 @@ def test_ticket_list_loads(client):
 
 
 def test_ticket_filters_work(client):
+    """Check combined filters include the matching ticket and exclude unrelated tickets."""
     response = client.get(
         "/tickets"
         "?status=Open"
@@ -171,6 +179,7 @@ def test_ticket_filters_work(client):
 
 
 def test_ticket_detail_loads(client):
+    """Check the detail page includes the stored issue and submitter information."""
     response = client.get(
         "/tickets/1"
     )
@@ -192,6 +201,7 @@ def test_ticket_detail_loads(client):
 
 
 def test_missing_ticket_returns_404(client):
+    """Check an unknown ticket produces the friendly missing-page response."""
     response = client.get(
         "/tickets/99999"
     )
@@ -205,6 +215,7 @@ def test_create_ticket(
     client,
     test_database
 ):
+    """Submit a valid form and verify both the response and the saved Open ticket."""
     response = client.post(
         "/tickets/new",
         data={
@@ -278,6 +289,7 @@ def test_create_ticket_rejects_blank_title(
     client,
     test_database
 ):
+    """Verify a blank title displays an error without inserting a row."""
     connection = get_database_connection(
         test_database
     )
@@ -334,6 +346,7 @@ def test_create_ticket_rejects_invalid_category(
     client,
     test_database
 ):
+    """Verify an unsupported category cannot be saved."""
     response = client.post(
         "/tickets/new",
         data={
@@ -378,6 +391,7 @@ def test_update_ticket_status(
     client,
     test_database
 ):
+    """Move an active ticket to In Progress and verify persistence."""
     response = client.post(
         "/tickets/1/status",
         data={
@@ -412,6 +426,7 @@ def test_update_ticket_status(
 
 
 def test_invalid_status_returns_404(client):
+    """Verify an unsupported workflow status is rejected."""
     response = client.post(
         "/tickets/1/status",
         data={
@@ -426,6 +441,7 @@ def test_resolution_requires_notes(
     client,
     test_database
 ):
+    """Verify resolving without notes leaves the ticket open."""
     response = client.post(
         "/tickets/1/resolve",
         data={
@@ -473,6 +489,7 @@ def test_ticket_can_be_resolved(
     client,
     test_database
 ):
+    """Verify a valid resolution saves both the final status and troubleshooting notes."""
     resolution_text = (
         "Verified the VPN settings, recreated "
         "the connection profile, and confirmed "
@@ -525,6 +542,7 @@ def test_ticket_can_be_resolved(
 
 @pytest.mark.parametrize("status", ["Open", "In Progress"])
 def test_resolved_ticket_cannot_change_status(client, test_database, status):
+    """Try each active status directly against a completed ticket and verify it remains resolved."""
     response = client.post("/tickets/3/status", data={"status": status})
     assert response.status_code == 302
     with get_database_connection(test_database) as connection:
@@ -534,6 +552,7 @@ def test_resolved_ticket_cannot_change_status(client, test_database, status):
 
 
 def test_resolved_ticket_notes_cannot_be_overwritten(client, test_database):
+    """Verify a repeated resolution request preserves the original documentation."""
     response = client.post("/tickets/3/resolve", data={"resolution_notes": "Replacement"})
     assert response.status_code == 302
     with get_database_connection(test_database) as connection:
@@ -543,6 +562,7 @@ def test_resolved_ticket_notes_cannot_be_overwritten(client, test_database):
 
 @pytest.mark.parametrize("length, accepted", [(150, True), (151, False)])
 def test_ticket_title_length(client, test_database, length, accepted):
+    """Check that the 150-character boundary is accepted and one extra character is rejected."""
     title = "T" * length
     response = client.post("/tickets/new", data={
         "title": title, "description": "Test description", "category": "Software",
@@ -558,6 +578,7 @@ def test_ticket_title_length(client, test_database, length, accepted):
 
 @pytest.mark.parametrize("field", ["status", "priority", "category"])
 def test_invalid_filter_is_not_shown_as_active(client, field):
+    """Check each unsupported filter is cleared from both results and displayed filter labels."""
     response = client.get("/tickets", query_string={field: "InvalidFilter"})
     assert response.status_code == 200
     assert b"InvalidFilter" not in response.data
@@ -566,6 +587,7 @@ def test_invalid_filter_is_not_shown_as_active(client, field):
 
 
 def test_valid_filter_remains_when_another_is_invalid(client):
+    """Verify clearing a bad filter does not discard another valid filter."""
     response = client.get("/tickets?status=Open&priority=InvalidFilter")
     assert b"Status: Open" in response.data
     assert b"InvalidFilter" not in response.data

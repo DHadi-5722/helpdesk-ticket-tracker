@@ -1,3 +1,4 @@
+# Exclude local environments, databases, private settings, and generated caches.
 .venv/
 __pycache__/
 *.pyc

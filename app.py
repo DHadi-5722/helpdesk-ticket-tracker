@@ -1,9 +1,12 @@
+"""Handle browser requests and connect ticket forms, SQLite data, and Jinja pages."""
+
 from flask import Flask, render_template, request, redirect, url_for
 from database import get_connection
 
 app = Flask(__name__)
 
 
+# These allowlists keep submitted values consistent with the form choices.
 VALID_CATEGORIES = [
     "Software",
     "Hardware",
@@ -28,6 +31,7 @@ VALID_STATUSES = [
 
 @app.route("/")
 def dashboard():
+    """Count tickets by workflow state and show the five newest submissions."""
     connection = get_connection()
 
     open_count = connection.execute(
@@ -99,10 +103,12 @@ def dashboard():
 
 @app.route("/tickets")
 def tickets():
+    """Apply supported URL filters and render the matching tickets newest first."""
     selected_status = request.args.get("status", "").strip()
     selected_priority = request.args.get("priority", "").strip()
     selected_category = request.args.get("category", "").strip()
 
+    # Clear unsupported filters before querying and before displaying active labels.
     if selected_status not in VALID_STATUSES:
         selected_status = ""
     if selected_priority not in VALID_PRIORITIES:
@@ -121,6 +127,7 @@ def tickets():
         FROM tickets
     """
 
+    # Build SQL from fixed clauses; user values travel separately as parameters.
     conditions = []
     parameters = []
 
@@ -164,6 +171,7 @@ def tickets():
 
 @app.route("/tickets/new", methods=["GET", "POST"])
 def new_ticket():
+    """Display the form or validate and save a new Open ticket on submission."""
     error = None
 
     if request.method == "POST":
@@ -191,6 +199,7 @@ def new_ticket():
         elif not submitted_by:
             error = "Submitted By is required."
 
+        # Save only after every server-side check passes, even if browser checks were bypassed.
         if error is None:
             connection = get_connection()
 
@@ -217,6 +226,7 @@ def new_ticket():
 
             connection.commit()
 
+            # Redirect to the saved ticket so refreshing the page does not resubmit the form.
             ticket_id = cursor.lastrowid
 
             connection.close()
@@ -238,6 +248,7 @@ def new_ticket():
 
 @app.route("/tickets/<int:ticket_id>")
 def ticket_detail(ticket_id):
+    """Load a single ticket, or return the missing-page response if it does not exist."""
     connection = get_connection()
 
     ticket = connection.execute(
@@ -274,6 +285,7 @@ def ticket_detail(ticket_id):
 
 @app.route("/tickets/<int:ticket_id>/status", methods=["POST"])
 def update_ticket_status(ticket_id):
+    """Change an active ticket between Open and In Progress; resolved tickets stay locked."""
     new_status = request.form.get("status", "").strip()
 
     if new_status not in VALID_STATUSES:
@@ -295,6 +307,7 @@ def update_ticket_status(ticket_id):
 
         return render_template("404.html"), 404
 
+    # Resolution must use the dedicated endpoint, which requires a note.
     if ticket["status"] == "Resolved" or new_status == "Resolved":
         connection.close()
 
@@ -311,6 +324,7 @@ def update_ticket_status(ticket_id):
         SET
             status = ?,
             updated_at = CURRENT_TIMESTAMP
+        -- Recheck the state during the write in case another request resolved it first.
         WHERE id = ? AND status != 'Resolved'
         """,
         (
@@ -332,6 +346,7 @@ def update_ticket_status(ticket_id):
 
 @app.route("/tickets/<int:ticket_id>/resolve", methods=["POST"])
 def resolve_ticket(ticket_id):
+    """Require a troubleshooting note and resolve an active ticket without overwriting completed work."""
     resolution_notes = request.form.get(
         "resolution_notes",
         ""
@@ -364,6 +379,7 @@ def resolve_ticket(ticket_id):
 
         return render_template("404.html"), 404
 
+    # Completed tickets are read-only, including when a request bypasses the hidden UI.
     if ticket["status"] == "Resolved":
         connection.close()
         return redirect(url_for("ticket_detail", ticket_id=ticket_id))
@@ -384,6 +400,7 @@ def resolve_ticket(ticket_id):
             status = 'Resolved',
             resolution_notes = ?,
             updated_at = CURRENT_TIMESTAMP
+        -- Recheck the state during the write in case another request resolved it first.
         WHERE id = ? AND status != 'Resolved'
         """,
         (
@@ -405,13 +422,16 @@ def resolve_ticket(ticket_id):
 
 @app.errorhandler(404)
 def page_not_found(error):
+    """Show a friendly page while preserving the HTTP 404 response code."""
     return render_template("404.html"), 404
 
 
 @app.errorhandler(500)
 def internal_server_error(error):
+    """Show a recovery page for unexpected errors with the HTTP 500 response code."""
     return render_template("500.html"), 500
 
 
+# Start the local development server only when this file is executed directly.
 if __name__ == "__main__":
     app.run(debug=True)

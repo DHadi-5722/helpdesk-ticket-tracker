@@ -3,6 +3,8 @@
 
 {% block content %}
 
+{# Submit the ticket form to Flask. Browser validation helps users; the server validates again before saving. #}
+
 
 <div class="row justify-content-center">
 
@@ -51,6 +53,7 @@
             <div class="card-body p-4">
 
 
+                {# Redisplay submitted values after errors; Jinja escapes user text automatically. #}
                 <form
                     method="POST"
                     action="/tickets/new"

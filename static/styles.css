@@ -1,9 +1,13 @@
+/* Custom presentation rules extending Bootstrap. */
+
+/* Shared background and default text color. */
 body {
     background-color: #f5f7fa;
     color: #212529;
 }
 
 
+/* Keep the footer separated from content on short pages. */
 .main-content {
     min-height: calc(100vh - 150px);
     padding-top: 32px;
@@ -27,6 +31,7 @@ body {
 }
 
 
+/* Align titles and actions with consistent spacing. */
 .page-heading {
     display: flex;
     justify-content: space-between;
@@ -36,6 +41,7 @@ body {
 }
 
 
+/* Align section titles and their related actions. */
 .section-heading {
     display: flex;
     justify-content: space-between;
@@ -45,6 +51,7 @@ body {
 }
 
 
+/* Give Bootstrap cards consistent borders and rounded corners. */
 .card {
     border: 1px solid #dee2e6;
     border-radius: 10px;
@@ -58,6 +65,7 @@ body {
 }
 
 
+/* Animate a subtle lift when hovering over summary cards. */
 .dashboard-card {
     transition: transform 0.15s ease;
 }
@@ -68,6 +76,7 @@ body {
 }
 
 
+/* Distinguish summary labels from the large counts. */
 .dashboard-label {
     color: #6c757d;
     font-weight: 600;
@@ -82,6 +91,7 @@ body {
 }
 
 
+/* Make clickable ticket titles stand out. */
 .ticket-link {
     font-weight: 600;
     text-decoration: none;
@@ -99,6 +109,7 @@ body {
 }
 
 
+/* Preserve user-entered line breaks while still wrapping long text. */
 .ticket-description {
     white-space: pre-line;
 }
@@ -109,6 +120,7 @@ body {
 }
 
 
+/* Separate field names visually from their values. */
 .field-label {
     display: block;
     color: #6c757d;
@@ -124,12 +136,14 @@ body {
 }
 
 
+/* Space the active-filter labels apart. */
 .filter-badge {
     margin-left: 6px;
     padding: 7px 9px;
 }
 
 
+/* Provide a clear panel for empty lists and suggested next actions. */
 .empty-state {
     background-color: white;
     border: 1px solid #dee2e6;
@@ -144,6 +158,7 @@ body {
 }
 
 
+/* Center recovery links and error messages within a readable width. */
 .error-page {
     max-width: 650px;
     margin: 80px auto;
@@ -160,6 +175,7 @@ body {
 }
 
 
+/* Style the footer shared by all pages. */
 .footer {
     background-color: white;
     padding: 20px 0;
@@ -167,6 +183,7 @@ body {
 }
 
 
+/* Prevent heading wraps; the template provides horizontal table scrolling. */
 table th {
     white-space: nowrap;
 }
@@ -177,6 +194,7 @@ table th {
 }
 
 
+/* Stack headings and actions and reduce spacing on narrow screens. */
 @media (max-width: 768px) {
 
     .page-heading {

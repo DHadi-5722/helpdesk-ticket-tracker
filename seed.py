@@ -1,7 +1,10 @@
+"""Add demonstration tickets to an initialized database; repeated runs add duplicate examples."""
+
 from database import get_connection
 
 
 def seed_database():
+    """Insert realistic sample tickets and print the resulting list for local demonstration."""
     connection = get_connection()
     cursor = connection.cursor()
 
