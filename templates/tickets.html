@@ -13,7 +13,7 @@
         </h1>
 
         <p class="text-muted">
-            View and track submitted IT support tickets.
+            View, filter, and track submitted IT support tickets.
         </p>
 
     </div>
@@ -31,6 +31,218 @@
     </div>
 
 </div>
+
+
+<div class="card shadow-sm mb-4">
+
+    <div class="card-header">
+
+        <h5 class="mb-0">
+            Filter Tickets
+        </h5>
+
+    </div>
+
+
+    <div class="card-body">
+
+        <form
+            method="GET"
+            action="/tickets"
+        >
+
+
+            <div class="row">
+
+
+                <div class="col-md-4 mb-3">
+
+                    <label
+                        for="status"
+                        class="form-label"
+                    >
+                        Status
+                    </label>
+
+
+                    <select
+                        class="form-select"
+                        id="status"
+                        name="status"
+                    >
+
+                        <option value="">
+                            All Statuses
+                        </option>
+
+
+                        {% for status in statuses %}
+
+                            <option
+                                value="{{ status }}"
+                                {% if selected_status == status %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ status }}
+                            </option>
+
+                        {% endfor %}
+
+
+                    </select>
+
+                </div>
+
+
+                <div class="col-md-4 mb-3">
+
+                    <label
+                        for="priority"
+                        class="form-label"
+                    >
+                        Priority
+                    </label>
+
+
+                    <select
+                        class="form-select"
+                        id="priority"
+                        name="priority"
+                    >
+
+                        <option value="">
+                            All Priorities
+                        </option>
+
+
+                        {% for priority in priorities %}
+
+                            <option
+                                value="{{ priority }}"
+                                {% if selected_priority == priority %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ priority }}
+                            </option>
+
+                        {% endfor %}
+
+
+                    </select>
+
+                </div>
+
+
+                <div class="col-md-4 mb-3">
+
+                    <label
+                        for="category"
+                        class="form-label"
+                    >
+                        Category
+                    </label>
+
+
+                    <select
+                        class="form-select"
+                        id="category"
+                        name="category"
+                    >
+
+                        <option value="">
+                            All Categories
+                        </option>
+
+
+                        {% for category in categories %}
+
+                            <option
+                                value="{{ category }}"
+                                {% if selected_category == category %}
+                                    selected
+                                {% endif %}
+                            >
+                                {{ category }}
+                            </option>
+
+                        {% endfor %}
+
+
+                    </select>
+
+                </div>
+
+
+            </div>
+
+
+            <div class="d-flex gap-2">
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    Apply Filters
+                </button>
+
+
+                <a
+                    href="/tickets"
+                    class="btn btn-outline-secondary"
+                >
+                    Clear Filters
+                </a>
+
+            </div>
+
+
+        </form>
+
+    </div>
+
+</div>
+
+
+{% if selected_status or selected_priority or selected_category %}
+
+    <div class="alert alert-light border">
+
+        <strong>
+            Active Filters:
+        </strong>
+
+
+        {% if selected_status %}
+
+            <span class="badge bg-secondary ms-1">
+                Status: {{ selected_status }}
+            </span>
+
+        {% endif %}
+
+
+        {% if selected_priority %}
+
+            <span class="badge bg-secondary ms-1">
+                Priority: {{ selected_priority }}
+            </span>
+
+        {% endif %}
+
+
+        {% if selected_category %}
+
+            <span class="badge bg-secondary ms-1">
+                Category: {{ selected_category }}
+            </span>
+
+        {% endif %}
+
+    </div>
+
+{% endif %}
 
 
 {% if tickets %}
@@ -180,7 +392,15 @@
 
 <div class="alert alert-info">
 
-    No support tickets have been created yet.
+    {% if selected_status or selected_priority or selected_category %}
+
+        No tickets match the selected filters.
+
+    {% else %}
+
+        No support tickets have been created yet.
+
+    {% endif %}
 
 </div>
 

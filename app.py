@@ -33,10 +33,11 @@ def dashboard():
 
 @app.route("/tickets")
 def tickets():
-    connection = get_connection()
+    selected_status = request.args.get("status", "").strip()
+    selected_priority = request.args.get("priority", "").strip()
+    selected_category = request.args.get("category", "").strip()
 
-    tickets = connection.execute(
-        """
+    query = """
         SELECT
             id,
             title,
@@ -45,15 +46,46 @@ def tickets():
             status,
             created_at
         FROM tickets
-        ORDER BY created_at DESC
-        """
+    """
+
+    conditions = []
+    parameters = []
+
+    if selected_status in VALID_STATUSES:
+        conditions.append("status = ?")
+        parameters.append(selected_status)
+
+    if selected_priority in VALID_PRIORITIES:
+        conditions.append("priority = ?")
+        parameters.append(selected_priority)
+
+    if selected_category in VALID_CATEGORIES:
+        conditions.append("category = ?")
+        parameters.append(selected_category)
+
+    if conditions:
+        query += " WHERE " + " AND ".join(conditions)
+
+    query += " ORDER BY created_at DESC"
+
+    connection = get_connection()
+
+    tickets = connection.execute(
+        query,
+        parameters
     ).fetchall()
 
     connection.close()
 
     return render_template(
         "tickets.html",
-        tickets=tickets
+        tickets=tickets,
+        statuses=VALID_STATUSES,
+        priorities=VALID_PRIORITIES,
+        categories=VALID_CATEGORIES,
+        selected_status=selected_status,
+        selected_priority=selected_priority,
+        selected_category=selected_category
     )
 
 
@@ -184,6 +216,7 @@ def update_ticket_status(ticket_id):
 
     if ticket is None:
         connection.close()
+
         return render_template("404.html"), 404
 
     if new_status == "Resolved":
@@ -252,6 +285,7 @@ def resolve_ticket(ticket_id):
 
     if ticket is None:
         connection.close()
+
         return render_template("404.html"), 404
 
     if not resolution_notes:
