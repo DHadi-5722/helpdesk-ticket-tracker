@@ -28,7 +28,73 @@ VALID_STATUSES = [
 
 @app.route("/")
 def dashboard():
-    return render_template("dashboard.html")
+    connection = get_connection()
+
+    open_count = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM tickets
+        WHERE status = ?
+        """,
+        ("Open",)
+    ).fetchone()[0]
+
+    in_progress_count = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM tickets
+        WHERE status = ?
+        """,
+        ("In Progress",)
+    ).fetchone()[0]
+
+    resolved_count = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM tickets
+        WHERE status = ?
+        """,
+        ("Resolved",)
+    ).fetchone()[0]
+
+    high_critical_count = connection.execute(
+        """
+        SELECT COUNT(*)
+        FROM tickets
+        WHERE priority IN (?, ?)
+        AND status != ?
+        """,
+        (
+            "High",
+            "Critical",
+            "Resolved"
+        )
+    ).fetchone()[0]
+
+    recent_tickets = connection.execute(
+        """
+        SELECT
+            id,
+            title,
+            priority,
+            status,
+            created_at
+        FROM tickets
+        ORDER BY created_at DESC
+        LIMIT 5
+        """
+    ).fetchall()
+
+    connection.close()
+
+    return render_template(
+        "dashboard.html",
+        open_count=open_count,
+        in_progress_count=in_progress_count,
+        resolved_count=resolved_count,
+        high_critical_count=high_critical_count,
+        recent_tickets=recent_tickets
+    )
 
 
 @app.route("/tickets")
