@@ -147,6 +147,8 @@ A ticket can be changed between Open and In Progress.
 
 Before a ticket can be marked as Resolved, a resolution note must be entered.
 
+Resolved tickets are read-only: status changes and replacement resolution notes are rejected by the server.
+
 The resolution note documents the troubleshooting or corrective action performed.
 
 After the ticket is resolved, its resolution information remains visible on the ticket detail page.
@@ -294,7 +296,7 @@ Run the complete test suite with:
 pytest -v
 ```
 
-The current automated test suite contains 12 tests covering the main ticket workflows.
+The current automated test suite contains 21 test cases covering the main ticket workflows.
 
 ---
 
@@ -399,7 +401,7 @@ The local virtual environment, SQLite database, cache files, and environment fil
 ### 1. Clone the Repository
 
 ```powershell
-git clone https://github.com/YOUR-USERNAME/helpdesk-ticket-tracker.git
+git clone https://github.com/DHadi-5722/helpdesk-ticket-tracker.git
 ```
 
 Move into the project folder:
@@ -448,7 +450,7 @@ Run:
 python database.py
 ```
 
-This creates the SQLite database and tickets table.
+This creates the SQLite database and tickets table. **Running this command again deletes existing tickets and rebuilds the table.**
 
 ---
 
