@@ -588,16 +588,44 @@ __pycache__/
 
 ## Screenshots
 
-Project screenshots will be added to demonstrate the completed application.
+Screenshots captured from the running local application using its responsive narrow-screen layout.
 
-Planned screenshots include:
+### Dashboard and navigation
 
-1. Dashboard
-2. All Tickets page
-3. Ticket filtering
-4. Create Ticket form
-5. Ticket detail page
-6. Resolved ticket with resolution notes
+Ticket counts, recent activity, and the expanded navigation menu.
+
+![Dashboard and navigation](docs/screenshots/dashboard.jpg)
+
+### All tickets
+
+Ticket list with status, priority, and category filter controls. On narrow screens, the table scrolls horizontally.
+
+![All tickets](docs/screenshots/tickets.jpg)
+
+### Combined filters
+
+Open, High priority, and Network filters applied together.
+
+![Combined filters](docs/screenshots/ticket-filters.jpg)
+
+### Create a ticket
+
+Required fields for submitting a new support request.
+
+![Create a ticket](docs/screenshots/create-ticket.jpg)
+
+### Active ticket workflow
+
+Full ticket information, status updates, and the resolution form.
+
+![Active ticket workflow](docs/screenshots/ticket-detail.jpg)
+
+### Resolved ticket
+
+Saved troubleshooting notes and the completed ticket state.
+
+![Resolved ticket](docs/screenshots/resolved-ticket.jpg)
+
 
 ---
 
